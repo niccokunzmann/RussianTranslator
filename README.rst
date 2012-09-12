@@ -40,7 +40,9 @@ Der Übersetzer kann nicht alles?
 --------------------------------
 
 Das stimmt.
-Er benutzt `http://dict.rambler.ru/german-russian/`__ für die Übersetzung und `http://ru.wiktionary.org/wiki/`__, um die Wörter vorzulesen.
+Er benutzt `http://dict.rambler.ru/german-russian/
+<http://dict.rambler.ru/german-russian/>`__ für die Übersetzung und `http://ru.wiktionary.org/wiki/
+<http://ru.wiktionary.org/wiki/>`__ , um die Wörter vorzulesen.
 
 Ich hab da eine Idee..
 ----------------------
