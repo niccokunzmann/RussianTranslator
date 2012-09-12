@@ -48,3 +48,11 @@ Ich hab da eine Idee..
 ----------------------
 
 Schreib sie an meinen Namen, den ich auch bei github habe @rambler.ru oder benutze das Githubwiki, um sie mitzuteilen.
+
+Schickt er mein Passwort ins Internet, wenn ich es kopiere?
+-----------------------------------------------------------
+
+Nein, außer dein Passwort besteht nur aus `kyrillischen Buchstaben
+<http://de.wikipedia.org/wiki/Unicodeblock_Kyrillisch>`__ .
+
+
