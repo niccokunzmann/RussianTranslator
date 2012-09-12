@@ -32,4 +32,4 @@ Alternativ ist er auch nochmal `hier
 
 Wenn es sich nicht `hier
 <https://raw.github.com/niccokunzmann/RussianTranslator/master/translator.pyw>`__ öffnet, dann `hier
-<./translator.pyw>`__ auf 'Raw' klicken und runterladen.
+<RussianTranslator/translator.pyw>`__ auf 'Raw' klicken und runterladen.
