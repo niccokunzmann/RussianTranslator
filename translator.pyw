@@ -147,9 +147,12 @@ def showPage(word, page):
     translationList.clear()
     for translation in translations:
         translationList.append(translation)
+    if not translations:
+        translationList.append('')
     root.title(word)
 
 translationList = ScrolledList(root)
+translationList.append('')
 root.bind('<Control-c>', lambda event: (root.clipboard_clear(),
                          root.clipboard_append(translationList.get("active"))))
 
