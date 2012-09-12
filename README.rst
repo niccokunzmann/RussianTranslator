@@ -12,5 +12,7 @@ Was muss ich tun, damit er vorliest?
 ------------------------------------
 
 VLC media player muss installiert sein.
-`http://www.videolan.org/<http://www.videolan.org/>`__
+`http://www.videolan.org/
+<http://www.videolan.org/>`__
 Das ist sehr leicht für mich zu benutzen.
+Unter Windows finde ich es sehr schnell in den Program Files.
