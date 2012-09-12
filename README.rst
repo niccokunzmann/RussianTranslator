@@ -47,12 +47,13 @@ Er benutzt `http://dict.rambler.ru/german-russian/
 Ich hab da eine Idee..
 ----------------------
 
-Schreib sie an meinen Namen, den ich auch bei github habe @rambler.ru oder benutze das Githubwiki, um sie mitzuteilen.
+Schreib sie an meinen Namen, den ich auch bei github habe, @rambler.ru oder benutze das Githubwiki, um sie mitzuteilen.
 
-Schickt er mein Passwort ins Internet, wenn ich es kopiere?
------------------------------------------------------------
+Was wird alles ins Internet geschickt?
+--------------------------------------
 
-Nein, außer dein Passwort besteht nur aus `kyrillischen Buchstaben
-<http://de.wikipedia.org/wiki/Unicodeblock_Kyrillisch>`__ .
+Nur Text (keine Dateien), den Du z.B. mit Strg-C kopierst, der ausschließlich aus `kyrillischen Buchstaben
+<http://de.wikipedia.org/wiki/Unicodeblock_Kyrillisch>`__ besteht.
+Und natürlich, was Du zum Suchen extra in den Übersetzer eingibst.
 
 
