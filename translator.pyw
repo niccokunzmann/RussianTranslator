@@ -102,7 +102,8 @@ def debug(*args):
     s = ''
     for arg in args:
         try:
-            arg = str(arg)
+            ## use debug because command line print may fail for unicode
+            arg = str(arg) 
         except:
             arg = repr(arg)
         s += arg + ' '
@@ -110,17 +111,19 @@ def debug(*args):
 
 def getTranslations(word, page):
     l = []
-    for link, word in translations_re.findall(page):
+    for link, word, wordWithoutLink in translations_re.findall(page):
         link = urllib.unquote(link)
         if link != word:
             debug('getTranslations: %r != %r' % (link, word))
+        if wordWithoutLink and not word:
+            word = wordWithoutLink
         if word not in l:
             l.append(word)
     return l
 
-translations_re = re.compile('<div class="d-translation">[^<]*<a href='\
+translations_re = re.compile('<div class="d-translation">(?=[^<]*<a href='\
                              '"/german-russian/(?P<link>[^"]*)">'\
-                             '(?P<translation>[^<]*)</a>')
+                             '(?P<translation>[^<]*)</a>|(.*?)</div>)')
 
 ## http://dict.rambler.ru/german-russian/%D0%BF%D1%80%D0%B8
 translations_re_examples = [('''    <div class="d-translation">
@@ -132,7 +135,14 @@ translations_re_examples = [('''    <div class="d-translation">
 	<span class="d-speech">Существительное</span>
 	</div><div><div class="d-translation">
 	<a href="/german-russian/Vergr%C3%B6%C3%9Ferung">Vergrößerung</a>
-	</div></div></div>''', ['Vergrößerung'])]
+	</div></div></div>''', ['Vergrößerung']),
+('''<div class="d-name_dict" onclick="show('1'); return false;">
+<span id="sp1">скрыть</span>Словарь общей лексики</div>
+<div id="id1" class="d-top-border">
+<div class="d-sub-name"><span class="d-word">очевидно</span>,&nbsp;
+	<span class="d-speech">Прилагательное</span></div><div>
+	<div class="d-translation">ist offenbar</div></div></div>''', \
+                            ['ist offenbar'])]
 
 
 for example, matches in translations_re_examples:
@@ -151,7 +161,11 @@ def showPage(word, page):
         translationList.append('')
     root.title(word)
 
+def on_double_click(index):
+    newWord(translationList.get("active"))
+
 translationList = ScrolledList(root)
+translationList.on_double = on_double_click
 translationList.append('')
 root.bind('<Control-c>', lambda event: (root.clipboard_clear(),
                          root.clipboard_append(translationList.get("active"))))
@@ -213,14 +227,16 @@ def playOgg(word):
     word = lowerKyrillic(word)
     url = 'http://ru.wiktionary.org/wiki/' + \
               urllib.quote(word.encode('UTF-8'))
-    page = openAsOpera(url)
+    try:
+        page = openAsOpera(url)
+    except IOError:
+        return False
     oggs = oggLink_re.findall(page)
     if oggs:
         ogg = oggs[0]
         if not ogg.startswith('http:'):
             ogg = 'http:' + ogg
         debug('found sound file', ogg)
-        import tempfile
         fd, oggfilename = tempfile.mkstemp('.ogg')
         tempnames.append(oggfilename)
         try:
