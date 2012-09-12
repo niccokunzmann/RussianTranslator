@@ -1,7 +1,7 @@
 RussianTranslator
 =================
 
-A free translator for the russian language. Ein Übersetzer von Russisch nach Deutsch.
+A free translator for the russian language. Ein Übersetzer von Russisch nach Deutsch, der auch vorlesen kann.
 
 Wie benutze ich ihn?
 --------------------
@@ -15,7 +15,9 @@ VLC media player muss installiert sein.
 `http://www.videolan.org/
 <http://www.videolan.org/>`__
 Das ist sehr leicht für mich zu benutzen.
-Unter Windows finde ich es sehr schnell in den Program Files.
+Unter Windows finde ich es sehr schnell, wenn es ganz normal installiert ist.
+VLC wird benutzt, um einzelne Wörter vorzulesen.
+
 
 Installieren
 ------------
@@ -33,3 +35,14 @@ Alternativ ist er auch nochmal `hier
 Wenn es sich nicht `hier
 <https://raw.github.com/niccokunzmann/RussianTranslator/master/translator.pyw>`__ öffnet, dann `hier
 <RussianTranslator/blob/master/translator.pyw>`__ auf 'Raw' klicken und runterladen.
+
+Der Übersetzer kann ja nicht alles!
+-----------------------------------
+
+Das stimmt.
+Er benutzt `dict.rambler.ru/german-russian/` für die Übersetzung und `https://ru.wiktionary.org/wiki/`, um die Wörter vorzulesen.
+
+Ich hab da eine Idee..
+----------------------
+
+Schreib sie an meinen Namen, den ich auch bei github habe @rambler.ru oder benutze das Githubwiki, um sie mitzuteilen.
