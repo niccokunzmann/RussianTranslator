@@ -34,10 +34,10 @@ Alternativ ist er auch nochmal `hier
 
 Wenn es sich nicht `hier
 <https://raw.github.com/niccokunzmann/RussianTranslator/master/translator.pyw>`__ öffnet, dann `hier
-<RussianTranslator/blob/master/translator.pyw>`__ auf 'Raw' klicken und runterladen.
+<RussianTranslator/blob/master/translator.pyw>`__ auf 'Raw' klicken und runterladen oder oben drüber.
 
-Der Übersetzer kann ja nicht alles!
------------------------------------
+Der Übersetzer kann nicht alles?
+--------------------------------
 
 Das stimmt.
 Er benutzt `dict.rambler.ru/german-russian/` für die Übersetzung und `https://ru.wiktionary.org/wiki/`, um die Wörter vorzulesen.
