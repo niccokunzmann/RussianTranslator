@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 ################################################################################
 ##                                                                            ##
@@ -39,8 +40,8 @@ import tempfile
 import thread
 
 def allKyrillic(string):
-    lower = unichr(1024)
-    higher = unichr(1279)
+    lower = unichr(1024) ## u'\u0400'
+    higher = unichr(1279) ## u'\u04ff'
     for letter in string:
         if lower <= letter and letter <= higher:
             # kyrillic letter
@@ -57,7 +58,7 @@ def lowerKyrillic(string):
     lower = unichr(1040)
     higher = unichr(1071)
     for letter in string:
-        if 1040 <= letter <= higher:
+        if lower <= letter <= higher:
             letter = unichr(ord(letter) + 32)
         l.append(letter)
     return type(string)().join(l)
@@ -75,13 +76,32 @@ def toTop():
 
 def pollClipboard(last):
     try:
-        this = root.clipboard_get().lstrip().rstrip()
-    except TclError:
+        this = root.clipboard_get()
+    except TclError as e:
+        debug('TclError %s' % e)
         ## TclError: CLIPBOARD selection doesn't exist or form "STRING" not defined
         this = last
+    
     root.after(20, pollClipboard, this)
-    if this != last and allKyrillic(this):
-        newWord(this)
+    if this != last:
+        print('found %s in clipboard %s' % (this, allKyrillic(this)))
+        this = toRussian(this)
+        if allKyrillic(this):
+            print('%s is kyrillic' % (this,))
+            newWord(this)
+
+isUnicode_re = re.compile('(?:\\\\u[0123456789abcdef]{4})*')
+
+assert isUnicode_re.match('\\u0435\\u0449\\u0451') is not None
+
+def toRussian(word):
+    word = word.lstrip().rstrip()
+    ## sometimes word look like unicode strings under linux
+    ## \u0435\u0449\u0451 = ещё
+    if isUnicode_re.match(word):
+        word = eval('u"%s"' % word)
+    return word
+    
 
 def newWord(word):
     import thread
@@ -103,7 +123,7 @@ def debug(*args):
     for arg in args:
         try:
             ## use debug because command line print may fail for unicode
-            arg = str(arg) 
+            arg = str(arg)
         except:
             arg = repr(arg)
         s += arg + ' '
@@ -361,7 +381,7 @@ if not os.path.exists(vlcCommand):
              '/usr/bin/', '/bin', '/']
         cwd = tempfile.mkdtemp()
         for searchThere in l:
-            if not l:
+            if not searchThere:
                 continue
             _vlcCommand = searchForVlc(searchThere, cwd = cwd)
             if _vlcCommand:
