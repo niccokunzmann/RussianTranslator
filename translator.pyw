@@ -64,7 +64,8 @@ def thereIsAnUpdate():
         if match:
             number = int(match.group('version'))
             if number > newVersionShouldBeNewerThan:
-                debug('new version available', number)
+                debug('new version available', number, '>', \
+                      newVersionShouldBeNewerThan)
                 try:
                     compile(content, '<test>', 'exec')
                 except:
@@ -434,7 +435,7 @@ settingsPaths = [os.path.join(location, settingsFile) for location in locations]
 ## load settings
 
 def tryLoad(path):
-    global vlcCommand, searchForUpdates
+    global vlcCommand, searchForUpdates, newVersionShouldBeNewerThan
     if not os.path.isfile(path):
         return False
     try:
