@@ -90,9 +90,12 @@ def pollClipboard(last):
             print('%s is kyrillic' % (this,))
             newWord(this)
 
-isUnicode_re = re.compile('(?:\\\\u[0123456789abcdef]{4})*')
+isUnicode_re = re.compile('^(?:\\\\u[0123456789abcdef]{4})*$')
 
 assert isUnicode_re.match('\\u0435\\u0449\\u0451') is not None
+assert isUnicode_re.match('\\u0435\\u0449\\u0451').string == '\\u0435\\u0449\\u0451'
+assert isUnicode_re.match('asdf') is None
+assert isUnicode_re.match('\\u0435\\u0449aa\\u0451') is None
 
 def toRussian(word):
     word = word.lstrip().rstrip()
@@ -242,7 +245,6 @@ def playWithVlc(filename):
                       '--qt-start-minimized', '--play-and-exit', \
                       '--play-and-stop'], shell = True)
 
-
 def playOgg(word):
     word = lowerKyrillic(word)
     url = 'http://ru.wiktionary.org/wiki/' + \
@@ -364,13 +366,24 @@ def searchForVlc(baseDir, cwd = None):
         for filename in vlcnames:
             _vlcCommand = [os.path.join(dirpath, filename), '--help']
             try:
-                p = subprocess.Popen(_vlcCommand, cwd = cwd)
+                p = subprocess.Popen(_vlcCommand, cwd = cwd,
+                                     stdin = subprocess.PIPE, \
+                                     stdout = subprocess.PIPE, \
+                                     stderr = subprocess.PIPE)
+                print _vlcCommand
             except OSError:
                 continue
+            stdout = ''
             for i in range(500):
                 time.sleep(0.001)
+                stdout += p.stdout.read()
                 if os.path.exists(vlchelp_txt):
-                    ## this must be vlc!
+                    ## windows7 vlc 2.xx
+                    return _vlcCommand[0]
+                if ('vlc' in stdout or 'VLC' in stdout) \
+                   and '--play-and-stop' in stdout \
+                   and '--play-and-exit' in stdout:
+                    ## ubuntu vlc 1.xx
                     return _vlcCommand[0]
 
 if not os.path.exists(vlcCommand):
