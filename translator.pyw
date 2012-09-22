@@ -39,6 +39,48 @@ import time
 import tempfile
 import thread
 
+## change the following line to higher number to notify other users
+## about the new version
+__version__ = 1
+downloadAndUpdateUrl = 'https://raw.github.com/niccokunzmann/RussianTranslator'\
+                       '/master/translator.pyw'
+version_re = re.compile('^__version__\s*=\s*(?P<version>\d+)\s*$')
+newVersionOfThisFile = None
+newVersionNumber = None
+
+def thereIsAnUpdate():
+    global newVersionOfThisFile, newVersionNumber
+    try:
+        content = openAsOpera(downloadAndUpdateUrl)
+    except IOError:
+        return False
+    for line in content.splitlines():
+        match = version_re.match(line)
+        if match:
+            number = int(m.group('version'))
+            if number > newVersionShouldBeNewerThan:
+                try:
+                    compile(content)
+                except:
+                    return False
+                newVersionNumber = number
+                newVersionOfThisFile = content
+                return True
+    return False
+
+searchForUpdates = True ## if you do not want updates: False
+askForUpdate = False
+newVersionShouldBeNewerThan = __version__
+
+def tryUpdate():
+    if searchForUpdates:
+        thread.start_new(_tryUpdate, ())
+
+def _tryUpdate():
+    global askForUpdate
+    if thereIsAnUpdate():
+        askForUpdate = True
+
 def allKyrillic(string):
     lower = unichr(1024) ## u'\u0400'
     higher = unichr(1279) ## u'\u04ff'
@@ -313,7 +355,7 @@ settingsPaths = [os.path.join(location, settingsFile) for location in locations]
 ## load settings
 
 def tryLoad(path):
-    global vlcCommand
+    global vlcCommand, searchForUpdates
     if not os.path.isfile(path):
         return False
     try:
@@ -323,6 +365,10 @@ def tryLoad(path):
                 geometry = line
             if i == 1:
                 vlcCommand = line
+            if i == 2:
+                searchForUpdates = not line.lower().startswith('no updates')
+            if i == 3 and line.isdigit():
+                newVersionShouldBeNewerThan = int(line)
     except:
         import traceback
         traceback.print_exc()
@@ -348,6 +394,8 @@ def saveSettings(path):
         f.write(size + '\n')
         ## save vlcCommand
         f.write(vlcCommand + '\n')
+        f.write(('search for updates' if searchForUpdates else 'no updates') + '\n')
+        f.write(str(newVersionShouldBeNewerThan) + '\n')
         f.close()
     except Exception as e:
         import traceback
@@ -361,11 +409,14 @@ for settingsPath in settingsPaths:
         break
 ##del settingsPath
 
-def quitRoot(event = None):
-    ## save settings
+def trySaveSettings():
     for settingsPath in settingsPaths:
         if saveSettings(settingsPath):
             break
+
+def quitRoot(event = None):
+    ## save settings
+    trySaveSettings()
     root.quit()
     root.destroy()
 
@@ -425,6 +476,62 @@ root.bind_all("<KeyPress-Escape>", quitRoot)
 root.protocol("WM_DELETE_WINDOW", quitRoot)
 pollClipboard(u'')
 root.mainloop()
+canUpdate = os.path.exists(__file__)
+if askForUpdate and newVersionOfThisFile and canUpdate:
+    def installUpdate():
+        print 'install update'
+
+        try:
+            lastSource = file(__file__).read()
+        except:
+            pass
+        else:
+            try:
+                f = file(__file__, 'w')
+            except IOError:
+                pass
+            else:
+                try:
+                    f.write(newVersionOfThisFile)
+                    f.close()
+                except IOError:
+                    f = file(__file__, 'w')
+                    f.write(lastSource)
+                    f.close()
+        newVersionRoot.quit()
+        newVersionRoot.destroy()
+    def skipUpdate():
+        global newVersionShouldBeNewerThan
+        print 'skip update'
+        assert newVersionNumber is not None
+        newVersionShouldBeNewerThan = newVersionNumber
+        trySaveSettings()
+        newVersionRoot.quit()
+        newVersionRoot.destroy()
+    def neverUpdate():
+        global searchForUpdates
+        print 'never update'
+        searchForUpdates = False
+        newVersionRoot.quit()
+        newVersionRoot.destroy()
+    installUpdateText = ':) updaten обновлять update'
+    skipUpdateText =    ':| nicht dieses Update не это обновление' \
+                        ' skip this update'
+    neverUpdateText =   '>:( nie! некогда! never!'
+    newVersionRoot = Tk()
+    newVersionRoot.title('updaten обновлять update')
+    installUpdateButton = Button(newVersionRoot, text = installUpdateText, \
+                                 command = installUpdate)
+    installUpdateButton.pack(fill = X)
+    skipUpdateButton = Button(newVersionRoot, text = skipUpdateText, \
+                                 command = skipUpdate)
+    skipUpdateButton.pack(fill = X)
+    neverUpdateButton = Button(newVersionRoot, text = neverUpdateText, \
+                                 command = neverUpdate)
+    neverUpdateButton.pack(fill = X)
+    newVersionRoot.mainloop()
+    
+    
 for filename in tempnames:
     if os.path.isfile(filename):
         try:
