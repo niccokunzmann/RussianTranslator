@@ -38,6 +38,7 @@ import subprocess
 import time
 import tempfile
 import thread
+import traceback
 
 ## change the following line to higher number to notify other users
 ## about the new version
@@ -57,11 +58,14 @@ def thereIsAnUpdate():
     for line in content.splitlines():
         match = version_re.match(line)
         if match:
-            number = int(m.group('version'))
+            number = int(match.group('version'))
             if number > newVersionShouldBeNewerThan:
+                debug('new version available', number)
                 try:
-                    compile(content)
+                    compile(content, '<test>', 'exec')
                 except:
+                    traceback.print_exc()
+                    debug('new version', number, 'throws error')
                     return False
                 newVersionNumber = number
                 newVersionOfThisFile = content
@@ -471,7 +475,8 @@ if not os.path.exists(vlcCommand):
     thread.start_new(findVLC, ())
 
 
-## load settings
+## settings loaded
+tryUpdate()
 root.bind_all("<KeyPress-Escape>", quitRoot)
 root.protocol("WM_DELETE_WINDOW", quitRoot)
 pollClipboard(u'')
