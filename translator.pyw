@@ -159,6 +159,7 @@ def updateQuestionAsked():
         newVersionRoot.deiconify()
         root.withdraw()
         return False
+    return True
 
 # ----------------------------- kyrillic functions -----------------------------
 
