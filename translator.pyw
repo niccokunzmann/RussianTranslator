@@ -78,16 +78,13 @@ def pollClipboard(last):
     try:
         this = root.clipboard_get()
     except TclError as e:
-        debug('TclError %s' % e)
         ## TclError: CLIPBOARD selection doesn't exist or form "STRING" not defined
         this = last
     
     root.after(20, pollClipboard, this)
     if this != last:
-        print('found %s in clipboard %s' % (this, allKyrillic(this)))
         this = toRussian(this)
         if allKyrillic(this):
-            print('%s is kyrillic' % (this,))
             newWord(this)
 
 isUnicode_re = re.compile('^(?:\\\\u[0123456789abcdef]{4})*$')
