@@ -40,9 +40,13 @@ import tempfile
 import thread
 import traceback
 
+root = Tk()
+root.title('Translator by Nicco Kunzmann')
+
+# ----------------------------- update -----------------------------
 ## change the following line to higher number to notify other users
 ## about the new version
-__version__ = 2
+__version__ = 1
 downloadAndUpdateUrl = 'https://raw.github.com/niccokunzmann/RussianTranslator'\
                        '/master/translator.pyw'
 version_re = re.compile('^__version__\s*=\s*(?P<version>\d+)\s*$')
@@ -85,6 +89,79 @@ def _tryUpdate():
     if thereIsAnUpdate():
         askForUpdate = True
 
+def installUpdate():
+    print 'install update'
+
+    try:
+        lastSource = file(__file__).read()
+    except:
+        pass
+    else:
+        try:
+            f = file(__file__, 'w')
+        except IOError:
+            pass
+        else:
+            try:
+                f.write(newVersionOfThisFile)
+                f.close()
+            except IOError:
+                f = file(__file__, 'w')
+                f.write(lastSource)
+                f.close()
+    quitRoot()
+    
+def skipUpdate():
+    global newVersionShouldBeNewerThan
+    print 'skip update'
+    assert newVersionNumber is not None
+    newVersionShouldBeNewerThan = newVersionNumber
+    trySaveSettings()
+    quitRoot()
+    
+def neverUpdate():
+    global searchForUpdates
+    print 'never update'
+    searchForUpdates = False
+    quitRoot()
+
+def doNothing():
+    quitRoot()
+    
+installUpdateText = ':) updaten обновлять update'
+skipUpdateText =    ':| nicht dieses Update не это обновление' \
+                    ' skip this update'
+neverUpdateText =   '>:( nie! некогда! never!'
+newVersionRoot = Toplevel(root)
+newVersionRoot.bind_all("<KeyPress-Escape>", doNothing)
+newVersionRoot.protocol("WM_DELETE_WINDOW", doNothing)
+newVersionRoot.withdraw()
+newVersionRoot.title('updaten обновлять update')
+installUpdateButton = Button(newVersionRoot, text = installUpdateText, \
+                             command = installUpdate)
+installUpdateButton.pack(fill = X)
+skipUpdateButton = Button(newVersionRoot, text = skipUpdateText, \
+                             command = skipUpdate)
+skipUpdateButton.pack(fill = X)
+neverUpdateButton = Button(newVersionRoot, text = neverUpdateText, \
+                             command = neverUpdate)
+neverUpdateButton.pack(fill = X)
+
+hasAskedUpdateQuestion = False
+
+def updateQuestionAsked():
+    global hasAskedUpdateQuestion
+    if hasAskedUpdateQuestion:
+        return True
+    hasAskedUpdateQuestion = True
+    canUpdate = os.path.exists(__file__)
+    if askForUpdate and newVersionOfThisFile and canUpdate:
+        newVersionRoot.deiconify()
+        root.withdraw()
+        return False
+
+# ----------------------------- kyrillic functions -----------------------------
+
 def allKyrillic(string):
     lower = unichr(1024) ## u'\u0400'
     higher = unichr(1279) ## u'\u04ff'
@@ -110,9 +187,6 @@ def lowerKyrillic(string):
     return type(string)().join(l)
 
 assert lowerKyrillic(u'Произношение') == u'произношение'
-
-root = Tk()
-root.title('Translator by Nicco Kunzmann')
 
 
 def toTop():
@@ -377,13 +451,14 @@ def tryLoad(path):
         import traceback
         traceback.print_exc()
         return False
-    try:
-        root.geometry(geometry)
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        debug('Exception in tryLoad when setting geometry: %s' % e)
-        return False
+    else:
+        try:
+            root.geometry(geometry)
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            debug('Exception in tryLoad when setting geometry: %s' % e)
+            return False
     return True
 
 def saveSettings(path):
@@ -420,9 +495,10 @@ def trySaveSettings():
 
 def quitRoot(event = None):
     ## save settings
-    trySaveSettings()
-    root.quit()
-    root.destroy()
+    if updateQuestionAsked():
+        trySaveSettings()
+        root.quit()
+        root.destroy()
 
 def searchForVlc(baseDir, cwd = None):
     if cwd is None:
@@ -481,65 +557,7 @@ root.bind_all("<KeyPress-Escape>", quitRoot)
 root.protocol("WM_DELETE_WINDOW", quitRoot)
 pollClipboard(u'')
 root.mainloop()
-canUpdate = os.path.exists(__file__)
-if askForUpdate and newVersionOfThisFile and canUpdate:
-    
-    def installUpdate():
-        print 'install update'
-
-        try:
-            lastSource = file(__file__).read()
-        except:
-            pass
-        else:
-            try:
-                f = file(__file__, 'w')
-            except IOError:
-                pass
-            else:
-                try:
-                    f.write(newVersionOfThisFile)
-                    f.close()
-                except IOError:
-                    f = file(__file__, 'w')
-                    f.write(lastSource)
-                    f.close()
-        newVersionRoot.quit()
-        newVersionRoot.destroy()
         
-    def skipUpdate():
-        global newVersionShouldBeNewerThan
-        print 'skip update'
-        assert newVersionNumber is not None
-        newVersionShouldBeNewerThan = newVersionNumber
-        trySaveSettings()
-        newVersionRoot.quit()
-        newVersionRoot.destroy()
-        
-    def neverUpdate():
-        global searchForUpdates
-        print 'never update'
-        searchForUpdates = False
-        newVersionRoot.quit()
-        newVersionRoot.destroy()
-        
-    installUpdateText = ':) updaten обновлять update'
-    skipUpdateText =    ':| nicht dieses Update не это обновление' \
-                        ' skip this update'
-    neverUpdateText =   '>:( nie! некогда! never!'
-    newVersionRoot = Tk()
-    newVersionRoot.title('updaten обновлять update')
-    installUpdateButton = Button(newVersionRoot, text = installUpdateText, \
-                                 command = installUpdate)
-    installUpdateButton.pack(fill = X)
-    skipUpdateButton = Button(newVersionRoot, text = skipUpdateText, \
-                                 command = skipUpdate)
-    skipUpdateButton.pack(fill = X)
-    neverUpdateButton = Button(newVersionRoot, text = neverUpdateText, \
-                                 command = neverUpdate)
-    neverUpdateButton.pack(fill = X)
-    newVersionRoot.mainloop()
-    
     
 for filename in tempnames:
     if os.path.isfile(filename):
