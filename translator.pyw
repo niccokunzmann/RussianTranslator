@@ -478,6 +478,7 @@ pollClipboard(u'')
 root.mainloop()
 canUpdate = os.path.exists(__file__)
 if askForUpdate and newVersionOfThisFile and canUpdate:
+    
     def installUpdate():
         print 'install update'
 
@@ -500,6 +501,7 @@ if askForUpdate and newVersionOfThisFile and canUpdate:
                     f.close()
         newVersionRoot.quit()
         newVersionRoot.destroy()
+        
     def skipUpdate():
         global newVersionShouldBeNewerThan
         print 'skip update'
@@ -508,12 +510,14 @@ if askForUpdate and newVersionOfThisFile and canUpdate:
         trySaveSettings()
         newVersionRoot.quit()
         newVersionRoot.destroy()
+        
     def neverUpdate():
         global searchForUpdates
         print 'never update'
         searchForUpdates = False
         newVersionRoot.quit()
         newVersionRoot.destroy()
+        
     installUpdateText = ':) updaten обновлять update'
     skipUpdateText =    ':| nicht dieses Update не это обновление' \
                         ' skip this update'
