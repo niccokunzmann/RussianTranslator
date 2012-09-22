@@ -246,11 +246,19 @@ def playWithVlc(filename):
                         stdout = subprocess.PIPE, \
                         stderr = subprocess.PIPE)    
 
-def playOgg(word):
+downloadedOggFiles = {} ## word : oggfilename
+
+def getOggFile(word):
     word = lowerKyrillic(word)
+    if word in downloadedOggFiles:
+        oggfilename = downloadedOggFiles[word]
+        if os.path.isfile(oggfilename):
+            return oggfilename
+        del oggfilename
     url = 'http://ru.wiktionary.org/wiki/' + \
               urllib.quote(word.encode('UTF-8'))
     try:
+        debug('looking for', word, 'at', url)
         page = openAsOpera(url)
     except IOError:
         return False
@@ -269,6 +277,13 @@ def playOgg(word):
         f = file(oggfilename, 'wb')
         f.write(oggSource)
         f.close()
+        downloadedOggFiles[word] = oggfilename
+        return oggfilename
+    return None
+
+def playOgg(word):
+    oggfilename = getOggFile(word)
+    if oggfilename:
         playWithVlc(oggfilename)
         return True
     return False
