@@ -238,9 +238,10 @@ def playWithVlc(filename):
     import subprocess
     if not vlcCommand:
         return
-    subprocess.Popen([vlcCommand, 'file:///' + filename, '--qt-start-minimized',\
-                      '--qt-start-minimized', '--play-and-exit', \
-                      '--play-and-stop'], shell = True)
+    command = [vlcCommand, 'file:///' + filename, '--qt-start-minimized',\
+               '--qt-start-minimized', '--play-and-exit', '--play-and-stop']
+    debug('running vlc:', *command)
+    subprocess.Popen(command, shell = True)
 
 def playOgg(word):
     word = lowerKyrillic(word)
