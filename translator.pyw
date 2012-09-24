@@ -39,6 +39,7 @@ import time
 import tempfile
 import thread
 import traceback
+import platform
 
 root = Tk()
 root.title('Translator by Nicco Kunzmann')
@@ -111,7 +112,7 @@ def installUpdate():
                 f.write(lastSource)
                 f.close()
     quitRoot()
-    
+
 def skipUpdate():
     global newVersionShouldBeNewerThan
     print 'skip update'
@@ -119,7 +120,7 @@ def skipUpdate():
     newVersionShouldBeNewerThan = newVersionNumber
     trySaveSettings()
     quitRoot()
-    
+
 def neverUpdate():
     global searchForUpdates
     print 'never update'
@@ -128,7 +129,7 @@ def neverUpdate():
 
 def doNothing():
     quitRoot()
-    
+
 installUpdateText = ':) updaten обновлять update'
 skipUpdateText =    ':| nicht dieses Update не это обновление' \
                     ' skip this update'
@@ -204,7 +205,7 @@ def pollClipboard(last):
     except TclError as e:
         ## TclError: CLIPBOARD selection doesn't exist or form "STRING" not defined
         this = last
-    
+
     root.after(20, pollClipboard, this)
     if this != last:
         this = toRussian(this)
@@ -225,7 +226,7 @@ def toRussian(word):
     if isUnicode_re.match(word):
         word = eval('u"%s"' % word)
     return word
-    
+
 
 
 def newWord(word):
@@ -277,16 +278,16 @@ translations_re_examples = [('''    <div class="d-translation">
 ''', ['bei']), ('''<div id="id1" class="d-top-border">
 <div class="d-sub-name">
 <span class="d-word">увеличение</span>,&nbsp;
-	<span class="d-speech">Существительное</span>
-	</div><div><div class="d-translation">
-	<a href="/german-russian/Vergr%C3%B6%C3%9Ferung">Vergrößerung</a>
-	</div></div></div>''', ['Vergrößerung']),
+    <span class="d-speech">Существительное</span>
+    </div><div><div class="d-translation">
+    <a href="/german-russian/Vergr%C3%B6%C3%9Ferung">Vergrößerung</a>
+    </div></div></div>''', ['Vergrößerung']),
 ('''<div class="d-name_dict" onclick="show('1'); return false;">
 <span id="sp1">скрыть</span>Словарь общей лексики</div>
 <div id="id1" class="d-top-border">
 <div class="d-sub-name"><span class="d-word">очевидно</span>,&nbsp;
-	<span class="d-speech">Прилагательное</span></div><div>
-	<div class="d-translation">ist offenbar</div></div></div>''', \
+    <span class="d-speech">Прилагательное</span></div><div>
+    <div class="d-translation">ist offenbar</div></div></div>''', \
                             ['ist offenbar'])]
 
 
@@ -369,7 +370,10 @@ def playWithVlc(filename):
     p = subprocess.Popen(command, \
                         stdin = subprocess.PIPE, \
                         stdout = subprocess.PIPE, \
-                        stderr = subprocess.PIPE)    
+                        stderr = subprocess.PIPE)
+
+def playWithMplayer(filename):
+    subprocess.call(('mplayer', filename))
 
 downloadedOggFiles = {} ## word : oggfilename
 
@@ -409,7 +413,10 @@ def getOggFile(word):
 def playOgg(word):
     oggfilename = getOggFile(word)
     if oggfilename:
-        playWithVlc(oggfilename)
+        if hasVLC:
+            playWithVlc(oggfilename)
+        elif hasMplayer:
+            playWithMplayer(oggfilename)
         return True
     return False
 
@@ -425,7 +432,7 @@ except:
         i+= 1
     if not __file__.lower().endswith('.pyw'):
         __file__ = 'translator.pyw'
-        
+
 
 settingsFile = '.' + os.path.splitext(os.path.basename(__file__))[0] + \
                'settings.dat'
@@ -538,10 +545,18 @@ def searchForVlc(baseDir, cwd = None):
                     ## ubuntu vlc 1.xx
                     return _vlcCommand[0]
 
-if not os.path.exists(vlcCommand):
+hasVLC = False
+
+if platform.system() == 'Darwin':
+    # Mac OS may have Mplayer
+    hasMplayer = subprocess.call(('hash', 'mplayer')) == 0
+else:
+    hasMplayer = False
+
+if not os.path.exists(vlcCommand) and not hasMplayer:
     vlcCommand = ''
     def findVLC():
-        global vlcCommand
+        global vlcCommand, hasVLC
         l = [os.environ.get('PROGRAMFILES'), os.environ.get('PROGRAMW6432'), \
              '/usr/bin/', '/bin', '/']
         cwd = tempfile.mkdtemp()
@@ -551,6 +566,7 @@ if not os.path.exists(vlcCommand):
             _vlcCommand = searchForVlc(searchThere, cwd = cwd)
             if _vlcCommand:
                 vlcCommand = _vlcCommand
+                hasVLC = True
                 debug('found vlc:', vlcCommand)
                 break
     thread.start_new(findVLC, ())
@@ -562,8 +578,8 @@ root.bind_all("<KeyPress-Escape>", quitRoot)
 root.protocol("WM_DELETE_WINDOW", quitRoot)
 pollClipboard(u'')
 root.mainloop()
-        
-    
+
+
 for filename in tempnames:
     if os.path.isfile(filename):
         try:
