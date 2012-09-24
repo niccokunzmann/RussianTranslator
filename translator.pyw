@@ -190,6 +190,8 @@ def lowerKyrillic(string):
 
 assert lowerKyrillic(u'Произношение') == u'произношение'
 
+# ----------------------------- translation -----------------------------
+
 
 def toTop():
 ##    root.deiconify() ## open if minimized
@@ -224,6 +226,7 @@ def toRussian(word):
         word = eval('u"%s"' % word)
     return word
     
+
 
 def newWord(word):
     import thread
@@ -471,7 +474,7 @@ def saveSettings(path):
     try:
         ## save geometry
         geometry = root.geometry()
-        size = re.match('\\d+x\\d+', geometry).string
+        size = re.match('(\\d+x\\d+)', geometry).group()
         f.write(size + '\n')
         ## save vlcCommand
         f.write(vlcCommand + '\n')
