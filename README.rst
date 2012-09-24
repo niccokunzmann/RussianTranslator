@@ -11,16 +11,30 @@ Wie benutze ich ihn?
 Was muss ich tun, damit er vorliest?
 ------------------------------------
 
-VLC media player muss installiert sein.
+VLC Media Player muss installiert sein.
 `http://www.videolan.org/
 <http://www.videolan.org/>`__
 Das ist sehr leicht für mich zu benutzen.
 Unter Windows finde ich es sehr schnell, wenn es ganz normal installiert ist.
 VLC wird benutzt, um einzelne Wörter vorzulesen.
 
-
 Installieren
 ------------
+
+Installieren unter Mac und Linux
+--------------------------------
+
+1. Translator.pyw runterladen
+
+Wenn es sich nicht `hier
+<https://raw.github.com/niccokunzmann/RussianTranslator/master/translator.pyw>`__ öffnet, dann `hier
+<RussianTranslator/blob/master/translator.pyw>`__ auf 'Raw' klicken und runterladen oder oben drüber.
+
+2. MPlayer installieren zum Abspielen
+
+
+Installieren unter Windows
+--------------------------
 
 1. Python installieren
 
