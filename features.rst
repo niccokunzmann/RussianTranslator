@@ -6,10 +6,11 @@ Was soll noch dazu?
  
  - wenn eingabewort != wort von übersetzung -> undeklinierte form mit rein (geschätzt: 1:30)
   
- - zurück knopf, wenn man auf wort geklickt hat (geschätzt: 3:00)
  
 Erledigt
 --------
+
+ - zurück knopf, wenn man auf wort geklickt hat (geschätzt: 3:00) (getan: knopf hat den übersetztenknopf ersetzt)
 
  - statt fragezeichen gesicht von programmierer (flagge unerwünscht), ! ist besser (! geschätzt: 0:01)
  

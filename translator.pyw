@@ -31,7 +31,12 @@
 from Tkinter import *
 import urllib
 import re
-from idlelib.ScrolledList import ScrolledList
+try:
+    from idlelib.ScrolledList import ScrolledList
+except:
+    import sys
+    sys.stderr.write('idlelib must be installed\n')
+    raise
 import sys
 import os
 import subprocess
@@ -40,6 +45,7 @@ import tempfile
 import thread
 import traceback
 import platform
+import thread
 
 root = Tk()
 root.title('Translator by Nicco Kunzmann')
@@ -187,6 +193,44 @@ def lowerKyrillic(string):
 
 assert lowerKyrillic(u'Произношение') == u'произношение'
 
+# ----------------------------- stack -----------------------------
+
+translationFrame = Frame(root)
+
+
+_translationStack = []
+
+def push_translation(translation):
+    assert translation is not None
+    _translationStack.append(translation)
+    root.after(10, updateToLastTranslationButton)
+
+def last_translation():
+    if len(_translationStack) < 2:
+        return None
+    return _translationStack[-2]
+
+def pop_translation():
+    t = last_translation()
+    _translationStack.pop(-1)
+    root.after(10, updateToLastTranslationButton)
+    return t
+
+def updateToLastTranslationButton():
+    if last_translation() is None:
+        toLastTranslationButton.pack_forget()
+    else:
+        toLastTranslationButton['text'] = last_translation()
+        toLastTranslationButton.pack()
+
+def goToLastWord(event = None):
+    last_translation = pop_translation()
+    translateWord(last_translation)
+
+toLastTranslationButton = Button(translationFrame, command = goToLastWord)
+toLastTranslationButton.pack(side = RIGHT)
+updateToLastTranslationButton()
+
 # ----------------------------- translation -----------------------------
 
 
@@ -223,10 +267,14 @@ def toRussian(word):
         word = eval('u"%s"' % word)
     return word
 
-
-
 def newWord(word):
-    import thread
+    push_translation(word)
+    translateWord(word)
+
+def translateWord(word):
+    global threadThatCanPlay
+    ## todo: use thread id for playing only last wanted word
+    assert isinstance(word, basestring)
     thread.start_new(play, (word,))
     show(word)
 
@@ -316,14 +364,11 @@ root.bind('<Control-c>', lambda event: (root.clipboard_clear(),
 def translateFromEntry(event = None):
     newWord(translationEntry.get())
 
-translationFrame = Frame(root)
 translationFrame.pack(side = BOTTOM, fill = X)
-translationEntry = Entry(translationFrame)
+translationEntry = Entry(translationFrame, width = 5)
 translationEntry.pack(fill = X, side = LEFT, expand = True)
 translationEntry.bind('<KeyPress-Return>', translateFromEntry)
-translateButton = Button(translationFrame, command = translateFromEntry, \
-                         text = '!')
-translateButton.pack(side = RIGHT)
+
 
 def openAsOpera(url):
     u = urllib.URLopener()
@@ -408,9 +453,12 @@ def getOggFile(word):
         return oggfilename
     return None
 
+
+threadThatCanPlay = None
+
 def playOgg(word):
     oggfilename = getOggFile(word)
-    if oggfilename:
+    if oggfilename and threadThatCanPlay == thread.get_ident():
         if hasVLC:
             playWithVlc(oggfilename)
         elif hasMplayer:
@@ -418,7 +466,9 @@ def playOgg(word):
         return True
     return False
 
-play = playOgg
+def play(word):
+    global threadThatCanPlay
+    threadThatCanPlay = thread.get_ident()
 
 ## find path for settings
 try: __file__
