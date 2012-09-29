@@ -92,8 +92,6 @@ def _tryUpdate():
         askForUpdate = True
 
 def installUpdate():
-    print 'install update'
-
     try:
         lastSource = file(__file__).read()
     except:
@@ -115,7 +113,6 @@ def installUpdate():
 
 def skipUpdate():
     global newVersionShouldBeNewerThan
-    print 'skip update'
     assert newVersionNumber is not None
     newVersionShouldBeNewerThan = newVersionNumber
     trySaveSettings()
@@ -123,7 +120,6 @@ def skipUpdate():
 
 def neverUpdate():
     global searchForUpdates
-    print 'never update'
     searchForUpdates = False
     quitRoot()
 
@@ -311,6 +307,7 @@ def on_double_click(index):
     newWord(translationList.get("active"))
 
 translationList = ScrolledList(root)
+translationList.listbox['height'] = 3
 translationList.on_double = on_double_click
 translationList.append('')
 root.bind('<Control-c>', lambda event: (root.clipboard_clear(),
@@ -402,6 +399,7 @@ def getOggFile(word):
         try:
             oggSource = openAsOpera(ogg)
         except IOError:
+            debug('sound file could not be opened:', ogg)
             return False
         f = file(oggfilename, 'wb')
         f.write(oggSource)
@@ -446,8 +444,10 @@ settingsPaths = [os.path.join(location, settingsFile) for location in locations]
 
 def tryLoad(path):
     global vlcCommand, searchForUpdates, newVersionShouldBeNewerThan
+    global hasVLC
     if not os.path.isfile(path):
         return False
+    gmometry = None
     try:
         for i, line in enumerate(file(path)):
             line = line[:-1]
@@ -455,15 +455,21 @@ def tryLoad(path):
                 geometry = line
             if i == 1:
                 vlcCommand = line
+                if os.path.exists(vlcCommand):
+                    hasVLC = True
             if i == 2:
                 searchForUpdates = not line.lower().startswith('no updates')
             if i == 3 and line.isdigit():
-                newVersionShouldBeNewerThan = int(line)
+                newValue = int(line)
+                if newValue > newVersionShouldBeNewerThan:
+                    newVersionShouldBeNewerThan = newValue
     except:
         import traceback
         traceback.print_exc()
         return False
     else:
+        if geometry is None:
+            return False
         try:
             root.geometry(geometry)
         except Exception as e:
@@ -494,6 +500,8 @@ def saveSettings(path):
         debug('Exception in saveSettings: %s' % e)
         return False
     return True
+
+hasVLC = False
 
 for settingsPath in settingsPaths:
     if tryLoad(settingsPath):
@@ -529,7 +537,6 @@ def searchForVlc(baseDir, cwd = None):
                                      stdin = subprocess.PIPE, \
                                      stdout = subprocess.PIPE, \
                                      stderr = subprocess.PIPE)
-                print _vlcCommand
             except OSError:
                 continue
             stdout = ''
@@ -545,7 +552,6 @@ def searchForVlc(baseDir, cwd = None):
                     ## ubuntu vlc 1.xx
                     return _vlcCommand[0]
 
-hasVLC = False
 
 if platform.system() == 'Darwin':
     # Mac OS may have Mplayer
@@ -553,7 +559,7 @@ if platform.system() == 'Darwin':
 else:
     hasMplayer = False
 
-if not os.path.exists(vlcCommand) and not hasMplayer:
+if not os.path.exists(vlcCommand) and not hasMplayer and not hasVLC:
     vlcCommand = ''
     def findVLC():
         global vlcCommand, hasVLC
