@@ -325,7 +325,7 @@ translationEntry = Entry(translationFrame)
 translationEntry.pack(fill = X, side = LEFT, expand = True)
 translationEntry.bind('<KeyPress-Return>', translateFromEntry)
 translateButton = Button(translationFrame, command = translateFromEntry, \
-                         text = '?')
+                         text = '!')
 translateButton.pack(side = RIGHT)
 
 def openAsOpera(url):
