@@ -418,6 +418,7 @@ def playWithMplayer(filename):
     subprocess.call(('mplayer', filename))
 
 downloadedOggFiles = {} ## word : oggfilename
+## todo: sometimes the ogg files are locked so they will not bedeleted on exit
 
 def getOggFile(word):
     word = lowerKyrillic(word)
@@ -447,8 +448,8 @@ def getOggFile(word):
             debug('sound file could not be opened:', ogg)
             return False
         f = file(oggfilename, 'wb')
-        f.write(oggSource)
-        f.close()
+        try: f.write(oggSource)
+        finally: f.close()
         downloadedOggFiles[word] = oggfilename
         return oggfilename
     return None
