@@ -418,7 +418,6 @@ def playWithMplayer(filename):
     subprocess.call(('mplayer', filename))
 
 downloadedOggFiles = {} ## word : oggfilename
-## todo: sometimes the ogg files are locked so they will not bedeleted on exit
 
 def getOggFile(word):
     word = lowerKyrillic(word)
