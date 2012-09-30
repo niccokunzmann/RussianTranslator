@@ -441,6 +441,7 @@ def getOggFile(word):
             ogg = 'http:' + ogg
         debug('found sound file', ogg)
         fd, oggfilename = tempfile.mkstemp('.ogg')
+        os.close(fd)
         tempnames.append(oggfilename)
         try:
             oggSource = openAsOpera(ogg)
