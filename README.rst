@@ -18,6 +18,8 @@ Das ist sehr leicht für mich zu benutzen.
 Unter Windows finde ich es sehr schnell, wenn es ganz normal installiert ist.
 VLC wird benutzt, um einzelne Wörter vorzulesen.
 
+Unter Mac OS kann auch mplayer zum vorlesen verwendet werden.
+
 Installieren
 ------------
 
@@ -61,7 +63,7 @@ Er benutzt `http://dict.rambler.ru/german-russian/
 Ich hab da eine Idee..
 ----------------------
 
-Schreib sie an meinen Namen, den ich auch bei github habe, @rambler.ru oder benutze das Githubwiki, um sie mitzuteilen.
+Schreib sie an niccokunzmann/at\rambler.ru oder benutze das Githubwiki, um sie mitzuteilen.
 
 Was wird alles ins Internet geschickt?
 --------------------------------------
