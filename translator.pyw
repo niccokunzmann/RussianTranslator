@@ -53,7 +53,7 @@ root.title('Translator by Nicco Kunzmann')
 # ----------------------------- update -----------------------------
 ## change the following line to higher number to notify other users
 ## about the new version
-__version__ = 3
+__version__ = 4
 downloadAndUpdateUrl = 'https://raw.github.com/niccokunzmann/RussianTranslator'\
                        '/master/translator.pyw'
 version_re = re.compile('^__version__\s*=\s*(?P<version>\d+)\s*$')
