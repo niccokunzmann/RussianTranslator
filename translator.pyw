@@ -181,6 +181,12 @@ def allKyrillic(string):
     return True
 
 def lowerKyrillic(string):
+    if isinstance(string, str):
+        return lowerKyrillic(string.decode('UTF8')).encode('UTF8')
+    assert isinstance(string, unicode)
+    return unicodeLowerKyrillic(string)
+
+def unicodeLowerKyrillic(string):
     l = []
     # http://de.wikipedia.org/wiki/Unicodeblock_Kyrillisch
     lower = unichr(1040)
@@ -192,6 +198,7 @@ def lowerKyrillic(string):
     return type(string)().join(l)
 
 assert lowerKyrillic(u'Произношение') == u'произношение'
+assert lowerKyrillic('Произношение') == 'произношение'
 
 # ----------------------------- stack -----------------------------
 
@@ -332,7 +339,6 @@ def getTranslations(word, page):
     differentSpellings = []
     addDifferentSpellings = False
     for spelling in spelling_re.findall(page):
-        print 'spelling:', (spelling, )
         if spelling not in words:
             addDifferentSpellings = True
         if spelling not in differentSpellings:
