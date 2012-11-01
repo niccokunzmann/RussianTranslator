@@ -212,7 +212,8 @@ def last_translation():
 
 def pop_translation():
     t = last_translation()
-    _translationStack.pop(-1)
+    if _translationStack:
+        _translationStack.pop(-1)
     root.after(10, updateToLastTranslationButton)
     return t
 
@@ -225,7 +226,8 @@ def updateToLastTranslationButton():
 
 def goToLastWord(event = None):
     last_translation = pop_translation()
-    translateWord(last_translation)
+    if last_translation:
+        translateWord(last_translation)
 
 toLastTranslationButton = Button(translationFrame, command = goToLastWord)
 toLastTranslationButton.pack(side = RIGHT)
@@ -299,7 +301,21 @@ def debug(*args):
         s += arg + ' '
     sys.stderr.write(s + '\n')
 
-def getTranslations(word, page):
+def getPossibleEncodings(word):
+    words = []
+    try:
+        words.append(word.encode('UTF8'))
+    except (UnicodeDecodeError, UnicodeEncodeError):
+        pass
+    try:
+        words.append(word.decode('UTF8'))
+    except (UnicodeDecodeError, UnicodeEncodeError):
+        pass
+    if word not in words:
+        words.append(word)
+    return words
+
+def getTranslations_simple(word, page):
     l = []
     for link, word, wordWithoutLink in translations_re.findall(page):
         link = urllib.unquote(link)
@@ -311,33 +327,74 @@ def getTranslations(word, page):
             l.append(word)
     return l
 
+def getTranslations(word, page):
+    words = getPossibleEncodings(word)
+    differentSpellings = []
+    addDifferentSpellings = False
+    for spelling in spelling_re.findall(page):
+        print 'spelling:', (spelling, )
+        if spelling not in words:
+            addDifferentSpellings = True
+        if spelling not in differentSpellings:
+            differentSpellings.append(spelling)
+    result = []
+    if addDifferentSpellings:
+        result.extend(differentSpellings)
+    result.extend(getTranslations_simple(word, page))
+    return result
+        
+
 translations_re = re.compile('<div class="d-translation">(?=[^<]*<a href='\
                              '"/german-russian/(?P<link>[^"]*)">'\
-                             '(?P<translation>[^<]*)</a>|(.*?)</div>)')
+                             '(?P<translation>[^<]*)</a>|([^<]*?)</div>)')
+spelling_re = re.compile('<span class="d-word">([^<]*?)</span>')
+
 
 ## http://dict.rambler.ru/german-russian/%D0%BF%D1%80%D0%B8
-translations_re_examples = [('''    <div class="d-translation">
-        <a href="/german-russian/bei">bei</a>
-    </div>
-''', ['bei']), ('''<div id="id1" class="d-top-border">
+translations_re_examples = [('при', '''<div id="id1" class="d-top-border">
+<div class="d-sub-name"><span class="d-word">при</span>,&nbsp;
+	<span class="d-speech">Предлог</span></div>
+	<div><div class="d-translation"><a href="/german-russian/bei">bei</a></div>
+	</div></div>''', ['bei']), ('увеличение', '''<div id="id1" class="d-top-border">
 <div class="d-sub-name">
 <span class="d-word">увеличение</span>,&nbsp;
     <span class="d-speech">Существительное</span>
     </div><div><div class="d-translation">
     <a href="/german-russian/Vergr%C3%B6%C3%9Ferung">Vergrößerung</a>
     </div></div></div>''', ['Vergrößerung']),
-('''<div class="d-name_dict" onclick="show('1'); return false;">
+('очевидно', '''<div class="d-name_dict" onclick="show('1'); return false;">
 <span id="sp1">скрыть</span>Словарь общей лексики</div>
 <div id="id1" class="d-top-border">
 <div class="d-sub-name"><span class="d-word">очевидно</span>,&nbsp;
     <span class="d-speech">Прилагательное</span></div><div>
     <div class="d-translation">ist offenbar</div></div></div>''', \
-                            ['ist offenbar'])]
+                            ['ist offenbar']),
+                            ('Muss', '''<span class="d-word">Muß</span>,&nbsp;
+<span class="d-speech">Существительное</span></div><div>
+<div class="d-translation">
+<a href="/german-russian/%D0%B4%D0%BE%D0%BB%D0%B3">долг</a>
+</div></div><div class="d-sub-name"><span class="d-word">Muß</span>,&nbsp;
+<span class="d-speech">Глагол</span></div><div>
+<div class="d-translation">быть обязанным</div><div class="d-translation">
+<a href="/german-russian/%D0%B4%D0%BE%D0%BB%D0%B6%D0%BD%D1%8B%D0%B9">должный</a>
+</div><div class="d-translation">должный идти</div><div class="d-translation">
+<a href="/german-russian/%D0%BE%D1%87%D0%B5%D0%B2%D0%B8%D0%B4%D0%BD%D0%BE">очевидно</a>
+</div></div><div class="d-sub-name"><span class="d-word">Mus</span>,&nbsp;
+<span class="d-speech">Существительное</span></div><div><div class="d-translation">
+<a href="/german-russian/%D0%BF%D0%BE%D0%B2%D0%B8%D0%B4%D0%BB%D0%BE">повидло</a>
+</div><div class="d-translation"><a href="/german-russian/%D0%BF%D1%8E%D1%80%D0%B5">пюре</a>
+</div></div></div>''', ['Muß', 'Mus', '\xd0\xb4\xd0\xbe\xd0\xbb\xd0\xb3',
+'\xd0\xb1\xd1\x8b\xd1\x82\xd1\x8c \xd0\xbe\xd0\xb1\xd1\x8f\xd0\xb7\xd0\xb0\xd0\xbd\xd0\xbd\xd1\x8b\xd0\xbc',
+'\xd0\xb4\xd0\xbe\xd0\xbb\xd0\xb6\xd0\xbd\xd1\x8b\xd0\xb9',
+'\xd0\xb4\xd0\xbe\xd0\xbb\xd0\xb6\xd0\xbd\xd1\x8b\xd0\xb9 \xd0\xb8\xd0\xb4\xd1\x82\xd0\xb8',
+'\xd0\xbe\xd1\x87\xd0\xb5\xd0\xb2\xd0\xb8\xd0\xb4\xd0\xbd\xd0\xbe', 
+'\xd0\xbf\xd0\xbe\xd0\xb2\xd0\xb8\xd0\xb4\xd0\xbb\xd0\xbe',
+'\xd0\xbf\xd1\x8e\xd1\x80\xd0\xb5'])]
 
 
-for example, matches in translations_re_examples:
-    found = getTranslations('', example)
-    assert found == matches, 'the word %s shall be found in %s' % (matches, found)
+for word, page, matches in translations_re_examples:
+    found = getTranslations(word, page)
+    assert found == matches, ' %s \n  ==  \n %s' % (matches, found)
 
 def showPage(word, page):
     global page_
@@ -354,12 +411,16 @@ def showPage(word, page):
 def on_double_click(index):
     newWord(translationList.get("active"))
 
+def copyFromList(event = None):
+    root.clipboard_clear()
+    wordToCopy = translationList.get("active")
+    root.clipboard_append(wordToCopy)
+
 translationList = ScrolledList(root)
 translationList.listbox['height'] = 3
 translationList.on_double = on_double_click
 translationList.append('')
-root.bind('<Control-c>', lambda event: (root.clipboard_clear(),
-                         root.clipboard_append(translationList.get("active"))))
+translationList.listbox.bind('<Control-c>', copyFromList)
 
 def translateFromEntry(event = None):
     newWord(translationEntry.get())
