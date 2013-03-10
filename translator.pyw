@@ -53,7 +53,7 @@ root.title('Translator by Nicco Kunzmann')
 # ----------------------------- update -----------------------------
 ## change the following line to higher number to notify other users
 ## about the new version
-__version__ = 4
+__version__ = 5
 downloadAndUpdateUrl = 'https://raw.github.com/niccokunzmann/RussianTranslator'\
                        '/master/translator.pyw'
 version_re = re.compile('^__version__\s*=\s*(?P<version>\d+)\s*$')
@@ -294,7 +294,14 @@ def show(string):
     f = urllib.urlopen(url)
     content = f.read()
     f.close()
-    showPage(string, content)
+    if f.code == 200:
+        showPage(string, content)
+    else:
+        fillTranslationList(u'Fehler, ошипка, error %s' % f.code, \
+                            ['Rambler geht nicht', \
+                             'Рамблер не работает', \
+                             'Rambler stopped working', \
+                             url])
     toTop()
 
 def debug(*args):
@@ -407,6 +414,9 @@ def showPage(word, page):
     page_ = page
     translations = getTranslations(word, page)
     debug('translated', word, 'into', translations)
+    fillTranslationList(word, translations)
+
+def fillTranslationList(word, translations):
     translationList.clear()
     for translation in translations:
         translationList.append(translation)
