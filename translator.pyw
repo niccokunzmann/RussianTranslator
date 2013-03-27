@@ -290,7 +290,7 @@ def translateWord(word):
 def show(string):
     global f
     urlString = urllib.quote(string.encode('UTF-8'))
-    url = 'http://dict.rambler.ru/german-russian/' + urlString
+    url = 'http://de.pons.eu/russisch-deutsch/' + urlString
     f = urllib.urlopen(url)
     content = f.read()
     f.close()
@@ -298,9 +298,9 @@ def show(string):
         showPage(string, content)
     else:
         fillTranslationList(u'Fehler, ошипка, error %s' % f.code, \
-                            ['Rambler geht nicht', \
-                             'Рамблер не работает', \
-                             'Rambler stopped working', \
+                            ['de.pons.eu geht nicht', \
+                             'de.pons.eu не работает', \
+                             'de.pons.eu stopped working', \
                              url])
     toTop()
 
@@ -329,31 +329,9 @@ def getPossibleEncodings(word):
         words.append(word)
     return words
 
-def getTranslations_simple(word, page):
-    l = []
-    for link, word, wordWithoutLink in translations_re.findall(page):
-        link = urllib.unquote(link)
-        if link != word:
-            debug('getTranslations: %r != %r' % (link, word))
-        if wordWithoutLink and not word:
-            word = wordWithoutLink
-        if word not in l:
-            l.append(word)
-    return l
-
 def getTranslations(word, page):
     words = getPossibleEncodings(word)
-    differentSpellings = []
-    addDifferentSpellings = False
-    for spelling in spelling_re.findall(page):
-        if spelling not in words:
-            addDifferentSpellings = True
-        if spelling not in differentSpellings:
-            differentSpellings.append(spelling)
-    result = []
-    if addDifferentSpellings:
-        result.extend(differentSpellings)
-    result.extend(getTranslations_simple(word, page))
+    
     return result
         
 
@@ -362,47 +340,87 @@ translations_re = re.compile('<div class="d-translation">(?=[^<]*<a href='\
                              '(?P<translation>[^<]*)</a>|([^<]*?)</div>)')
 spelling_re = re.compile('<span class="d-word">([^<]*?)</span>')
 
+translations_re_examples = [('при', ''' 
+    </td>
+    <td class="source" >
+      <span class="idiom_proverb"><strong class="tilde">
+				при</strong> э́том</span>
+    </td>
+      <td class="target">
+        dabei
+      </td>
+    <td class="options right">
+      ''', ['dabei']), ('увеличение', '''    <td class="source">
+      <strong class="headword">увеличе́ние</strong>
+    </td>
+      <td class="target">
+        <a href="/deutsch-russisch/Vergr%C3%B6%C3%9Ferung">Vergrößerung</a> <span class="genus"><acronym title="Femininum">f</acronym></span>
+      </td>''', ['Vergrößerung']),
+('очевидно', '''<strong class="headword">очеви́дно</strong>
+    </td>
+    
+      <td class="target">
+        <a href="/deutsch-russisch/offensichtlich">offensichtlich</a>
+      </td>
+    
+    <td class="options right">
+      
+        <ul>
+          
+            <li>  
+              <a href="/open_dict/audio_tts/de/Tderu7793532?l=deru" class="tts play_btn trackable trk-audio ">
+                <span class="icon audio">
+                  
+                </span>
+              </a>
+            </li>
+          
+            <li>
+              <span class="icon circle-plus trainerAddSingle" title="Diese Übersetzung in den PONS Vokabeltrainer übernehmen"></span>
+            </li>
+          
+        </ul>
+      
+      <div class="acapela">
+        powered by <a href="http://www.acapela-group.com" target="_blank">acapela</a> text to speech
+      </div> 
+    </td>
+  
+</tr>
 
-## http://dict.rambler.ru/german-russian/%D0%BF%D1%80%D0%B8
-translations_re_examples = [('при', '''<div id="id1" class="d-top-border">
-<div class="d-sub-name"><span class="d-word">при</span>,&nbsp;
-	<span class="d-speech">Предлог</span></div>
-	<div><div class="d-translation"><a href="/german-russian/bei">bei</a></div>
-	</div></div>''', ['bei']), ('увеличение', '''<div id="id1" class="d-top-border">
-<div class="d-sub-name">
-<span class="d-word">увеличение</span>,&nbsp;
-    <span class="d-speech">Существительное</span>
-    </div><div><div class="d-translation">
-    <a href="/german-russian/Vergr%C3%B6%C3%9Ferung">Vergrößerung</a>
-    </div></div></div>''', ['Vergrößerung']),
-('очевидно', '''<div class="d-name_dict" onclick="show('1'); return false;">
-<span id="sp1">скрыть</span>Словарь общей лексики</div>
-<div id="id1" class="d-top-border">
-<div class="d-sub-name"><span class="d-word">очевидно</span>,&nbsp;
-    <span class="d-speech">Прилагательное</span></div><div>
-    <div class="d-translation">ist offenbar</div></div></div>''', \
-                            ['ist offenbar']),
-                            ('Muss', '''<span class="d-word">Muß</span>,&nbsp;
-<span class="d-speech">Существительное</span></div><div>
-<div class="d-translation">
-<a href="/german-russian/%D0%B4%D0%BE%D0%BB%D0%B3">долг</a>
-</div></div><div class="d-sub-name"><span class="d-word">Muß</span>,&nbsp;
-<span class="d-speech">Глагол</span></div><div>
-<div class="d-translation">быть обязанным</div><div class="d-translation">
-<a href="/german-russian/%D0%B4%D0%BE%D0%BB%D0%B6%D0%BD%D1%8B%D0%B9">должный</a>
-</div><div class="d-translation">должный идти</div><div class="d-translation">
-<a href="/german-russian/%D0%BE%D1%87%D0%B5%D0%B2%D0%B8%D0%B4%D0%BD%D0%BE">очевидно</a>
-</div></div><div class="d-sub-name"><span class="d-word">Mus</span>,&nbsp;
-<span class="d-speech">Существительное</span></div><div><div class="d-translation">
-<a href="/german-russian/%D0%BF%D0%BE%D0%B2%D0%B8%D0%B4%D0%BB%D0%BE">повидло</a>
-</div><div class="d-translation"><a href="/german-russian/%D0%BF%D1%8E%D1%80%D0%B5">пюре</a>
-</div></div></div>''', ['Muß', 'Mus', '\xd0\xb4\xd0\xbe\xd0\xbb\xd0\xb3',
-'\xd0\xb1\xd1\x8b\xd1\x82\xd1\x8c \xd0\xbe\xd0\xb1\xd1\x8f\xd0\xb7\xd0\xb0\xd0\xbd\xd0\xbd\xd1\x8b\xd0\xbc',
-'\xd0\xb4\xd0\xbe\xd0\xbb\xd0\xb6\xd0\xbd\xd1\x8b\xd0\xb9',
-'\xd0\xb4\xd0\xbe\xd0\xbb\xd0\xb6\xd0\xbd\xd1\x8b\xd0\xb9 \xd0\xb8\xd0\xb4\xd1\x82\xd0\xb8',
-'\xd0\xbe\xd1\x87\xd0\xb5\xd0\xb2\xd0\xb8\xd0\xb4\xd0\xbd\xd0\xbe', 
-'\xd0\xbf\xd0\xbe\xd0\xb2\xd0\xb8\xd0\xb4\xd0\xbb\xd0\xbe',
-'\xd0\xbf\xd1\x8e\xd1\x80\xd0\xb5'])]
+
+
+<tr id="Tderu7793533" class="kne" data-translation="1">
+  
+    <td class="options left"> 
+      <ul>
+        
+          <li>
+            <span class="icon circle-plus trainerAddSingle" title="Diese Übersetzung in den PONS Vokabeltrainer übernehmen"></span>
+          </li>
+        
+          <li>  
+          	
+              <a href="/open_dict/audio_tts/ru/Tderu7793533?l=deru" class="tts play_btn trackable trk-audio ">
+                <span class="icon audio">
+                  
+                </span>
+              </a>
+            
+          </li>
+        
+      </ul>
+      <div class="acapela">
+        powered by <a href="http://www.acapela-group.com" target="_blank">acapela</a> text to speech
+      </div> 
+    </td>
+    <td class="source">
+      <strong class="headword">очеви́дно</strong>
+    </td>
+    
+      <td class="target">
+        <a href="/deutsch-russisch/offenkundig">offenkundig</a>''', \
+                            ['offensichtlich', 'offenkundig'])]
 
 
 for word, page, matches in translations_re_examples:
