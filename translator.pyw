@@ -342,15 +342,28 @@ def getTranslations(word, page):
     matches = []
     for searched, result in translations_re.findall(page):
         print repr(searched), repr(result)
-        searched, result = removeHTML(searched), removeHTML(result)
+        searched, result = getEntry(searched), getEntry(result)
         print repr(searched), repr(result)
-        if removeAccentuation(searched) in words:
+        if removeAccentuation(searched) in words or searched in words:
             exactMatches.append(result)
         else:
             if not searched in matches:
                 matches.append(searched)
             matches.append(result)
     return exactMatches + matches
+
+def getEntry(match):
+    spans = []
+    def replaceSpan(span):
+        print 'span:', span.group('span')
+        spans.append(removeHTML(span.group('span')))
+        return ''
+    result = removeHTML(span_re.sub(replaceSpan, match))
+    if spans:
+        result += ' [%s]' % ', '.join(spans)
+    return result
+    
+span_re = re.compile('<span(?!\\s+class="idiom_proverb")[^>]*>(?P<span>.*?)</span>', re.DOTALL)
 
 def removeHTML(string):
     s = removeHTML_re.sub('', string)
@@ -379,7 +392,7 @@ translations_re_examples = [('при', '''
     </td>
       <td class="target">
         <a href="/deutsch-russisch/Vergr%C3%B6%C3%9Ferung">Vergrößerung</a> <span class="genus"><acronym title="Femininum">f</acronym></span>
-      </td>''', ['Vergrößerung f']),
+      </td>''', ['Vergrößerung [f]']),
 ('очевидно', ''' <td class="source"><strong class="headword">очеви́дно</strong>
     </td>
     
