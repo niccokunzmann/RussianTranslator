@@ -335,15 +335,10 @@ def removeAccentuation(word):
 
 def getTranslations(word, page):
     words = list(map(removeHTML, getPossibleEncodings(word)))
-    print '/' * 60
-    print page
-    print '/' * 60
     exactMatches = []
     matches = []
     for searched, result in translations_re.findall(page):
-        print repr(searched), repr(result)
         searched, result = getEntry(searched), getEntry(result)
-        print repr(searched), repr(result)
         if removeAccentuation(searched) in words or searched in words:
             exactMatches.append(result)
         else:
@@ -355,15 +350,22 @@ def getTranslations(word, page):
 def getEntry(match):
     spans = []
     def replaceSpan(span):
-        print 'span:', span.group('span')
-        spans.append(removeHTML(span.group('span')))
+        result = span.group('span') or span.group('sense')
+        spans.append(removeHTML(result))
         return ''
     result = removeHTML(span_re.sub(replaceSpan, match))
     if spans:
         result += ' [%s]' % ', '.join(spans)
     return result
+
+def removeAnnotation(string):
+    if '[' in string:
+        return string[:string.rfind('[')]
+    return string
     
-span_re = re.compile('<span(?!\\s+class="idiom_proverb")[^>]*>(?P<span>.*?)</span>', re.DOTALL)
+span_re = re.compile('<span\\s+class="sense">\\(?(?P<sense>[^<]*?)\\)?</span>|'\
+                     '<span(?!\\s+class="idiom_proverb")[^>]*>(?P<span>.*?)</span>'\
+                     , re.DOTALL)
 
 def removeHTML(string):
     s = removeHTML_re.sub('', string)
@@ -480,12 +482,16 @@ def fillTranslationList(word, translations):
         translationList.append('')
     root.title(word)
 
+def getListWord(index = 'active'):
+    return removeAnnotation(translationList.get(index))
+
 def on_double_click(index):
-    newWord(translationList.get("active"))
+    newWord(getListWord())
 
 def copyFromList(event = None):
     root.clipboard_clear()
-    wordToCopy = translationList.get("active")
+    wordToCopy = getListWord()
+    
     root.clipboard_append(wordToCopy)
 
 translationList = ScrolledList(root)
