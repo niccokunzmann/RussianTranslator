@@ -290,7 +290,7 @@ def translateWord(word):
 def show(string):
     global f
     urlString = urllib.quote(string.encode('UTF-8'))
-    url = 'http://de.pons.eu/russisch-deutsch/' + urlString
+    url = 'http://de.pons.eu/dict/search/results/?q=%s&l=deru&in=&lf=de' % urlString
     f = urllib.urlopen(url)
     content = f.read()
     f.close()
@@ -329,16 +329,40 @@ def getPossibleEncodings(word):
         words.append(word)
     return words
 
-def getTranslations(word, page):
-    words = getPossibleEncodings(word)
-    
-    return result
-        
+def removeAccentuation(word):
+    assert type(word) is str
+    return word.replace('́', '')
 
-translations_re = re.compile('<div class="d-translation">(?=[^<]*<a href='\
-                             '"/german-russian/(?P<link>[^"]*)">'\
-                             '(?P<translation>[^<]*)</a>|([^<]*?)</div>)')
-spelling_re = re.compile('<span class="d-word">([^<]*?)</span>')
+def getTranslations(word, page):
+    words = list(map(removeHTML, getPossibleEncodings(word)))
+    print '/' * 60
+    print page
+    print '/' * 60
+    exactMatches = []
+    matches = []
+    for searched, result in translations_re.findall(page):
+        print repr(searched), repr(result)
+        searched, result = removeHTML(searched), removeHTML(result)
+        print repr(searched), repr(result)
+        if removeAccentuation(searched) in words:
+            exactMatches.append(result)
+        else:
+            if not searched in matches:
+                matches.append(searched)
+            matches.append(result)
+    return exactMatches + matches
+
+def removeHTML(string):
+    s = removeHTML_re.sub('', string)
+    s = whitespace_re.sub(' ', s)
+    if not s:
+        return s
+    return s[s[0] == ' ':len(s) - (s[-1] == ' ')]
+
+removeHTML_re = re.compile('<[^>]*>')
+whitespace_re = re.compile('\\s+')
+translations_re = re.compile('<td\s+class="source"\s*>(.*?)</td>[^<]*'\
+                             '<td\s+class="target"\s*>(.*?)</td>', re.DOTALL)
 
 translations_re_examples = [('при', ''' 
     </td>
@@ -350,13 +374,13 @@ translations_re_examples = [('при', '''
         dabei
       </td>
     <td class="options right">
-      ''', ['dabei']), ('увеличение', '''    <td class="source">
+      ''', ['при э́том', 'dabei']), ('увеличение', '''    <td class="source">
       <strong class="headword">увеличе́ние</strong>
     </td>
       <td class="target">
         <a href="/deutsch-russisch/Vergr%C3%B6%C3%9Ferung">Vergrößerung</a> <span class="genus"><acronym title="Femininum">f</acronym></span>
-      </td>''', ['Vergrößerung']),
-('очевидно', '''<strong class="headword">очеви́дно</strong>
+      </td>''', ['Vergrößerung f']),
+('очевидно', ''' <td class="source"><strong class="headword">очеви́дно</strong>
     </td>
     
       <td class="target">
@@ -419,7 +443,8 @@ translations_re_examples = [('при', '''
     </td>
     
       <td class="target">
-        <a href="/deutsch-russisch/offenkundig">offenkundig</a>''', \
+        <a href="/deutsch-russisch/offenkundig">offenkundig</a>
+        </td>''', \
                             ['offensichtlich', 'offenkundig'])]
 
 
