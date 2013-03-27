@@ -56,8 +56,8 @@ Der Übersetzer kann nicht alles?
 --------------------------------
 
 Das stimmt.
-Er benutzt `http://dict.rambler.ru/german-russian/
-<http://dict.rambler.ru/german-russian/>`__ für die Übersetzung und `http://ru.wiktionary.org/wiki/
+Er benutzt `http://de.pons.eu/dict/search/results/?q=suchen&l=deru&in=&lf=de
+<http://de.pons.eu/dict/search/results/?q=suchen&l=deru&in=&lf=de>`__ für die Übersetzung und `http://ru.wiktionary.org/wiki/
 <http://ru.wiktionary.org/wiki/>`__ , um die Wörter vorzulesen.
 
 Ich hab da eine Idee..
